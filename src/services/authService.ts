@@ -6,6 +6,7 @@ import {
   JWT_REF_SECRET,
   JWT_SECRET,
   refreshTokenExpiry,
+  saltRounds,
 } from '../config.js';
 
 export const registerUser = async (
@@ -24,7 +25,8 @@ export const registerUser = async (
       throw new Error('User already Exists.');
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const salt = await bcrypt.genSalt(Number(saltRounds));
+    const hashedPassword = await bcrypt.hash(password, salt);
     const user = await prisma.user.create({
       data: {
         email: email,
@@ -47,9 +49,9 @@ export const loginUser = async (email: string, password: string) => {
     if (!user) {
       throw new Error('User not Found');
     }
-    const res = await bcrypt.compare(password, user.password);
-    if (!res) {
-      throw new Error('Invalid Credentials');
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      throw new Error('Password is Incorrect');
     }
 
     const claims = {

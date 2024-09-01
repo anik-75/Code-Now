@@ -23,17 +23,25 @@ model User {
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   refresehTokens RefreshToken[]
+  role           Role           @default(User)
+}
+
+enum Role {
+  Admin
+  User
 }
 
 // 1 : M
 model Submission {
-  id       Int     @id @default(autoincrement())
-  code     String
-  language String
-  input    String?
-  output   String
-  user     User    @relation(fields: [userId], references: [id])
-  userId   Int
+  id        Int      @id @default(autoincrement())
+  code      String
+  language  String
+  input     String?
+  output    String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  Problem   Problem? @relation(fields: [problemId], references: [id])
+  problemId Int?
 }
 
 model RefreshToken {
@@ -43,4 +51,21 @@ model RefreshToken {
   userId     Int      @unique
   expiryDate DateTime
   createdAt  DateTime @default(now())
+}
+
+model Problem {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String
+  difficulty  Difficulty
+  input       String
+  output      String
+  submission  Submission[]
+  slug        String       @unique
+}
+
+enum Difficulty {
+  Easy
+  Medium
+  Hard
 }

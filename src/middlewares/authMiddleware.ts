@@ -17,7 +17,7 @@ export const authMiddleWare = (
     req.userId = decoded?.userId;
     next();
   } catch (error) {
-    res.status(401).json({ error: 'Invalid token.' });
+    res.status(401).json({ error: 'Unauthorized' });
     next(error);
   }
 };
