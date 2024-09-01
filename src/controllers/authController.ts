@@ -25,10 +25,8 @@ export const register = async (
     res.status(201).json(response);
   } catch (error: unknown) {
     let errorMessage = 'Registration went wrong.';
-    if (error instanceof Error) {
-      errorMessage += error.message;
-    }
-    res.status(400).json(errorMessage);
+    if (error instanceof Error)
+      res.status(400).json({ error: error.message, message: errorMessage });
     next(error);
   }
 };
@@ -46,7 +44,7 @@ export const login = async (
     if (tokens?.accessToken) {
       res.cookie('accessToken', tokens.accessToken, {
         httpOnly: true,
-        // TODO: Uncomment it
+        // TODO: secure
         // secure: true,
         sameSite: 'strict',
         maxAge: accessTokenExpiry,
@@ -68,10 +66,8 @@ export const login = async (
     });
   } catch (error: unknown) {
     let errorMessage = 'Login Failed.';
-    if (error instanceof Error) {
-      errorMessage += error.message;
-    }
-    res.status(401).json(errorMessage);
+    if (error instanceof Error)
+      res.status(401).json({ error: error.message, message: errorMessage });
     next(error);
   }
 };
@@ -105,10 +101,8 @@ export const refreshToken = async (
     res.status(200).json({ message: 'Refresh Token Successfully' });
   } catch (error: unknown) {
     let errorMessage = 'Login Again. Refreshing Token Failed.';
-    if (error instanceof Error) {
-      errorMessage += error.message;
-    }
-    res.status(400).send(errorMessage);
+    if (error instanceof Error)
+      res.status(400).json({ error: error.message, message: errorMessage });
     next(error);
   }
 };

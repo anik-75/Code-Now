@@ -15,7 +15,6 @@ export const authMiddleWare = (
 
     const decoded = verifyToken(accessToken);
     req.userId = decoded?.userId;
-    console.log(decoded);
     next();
   } catch (error) {
     res.status(401).json({ error: 'Invalid token.' });

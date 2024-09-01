@@ -63,16 +63,38 @@ export const loginUser = async (email: string, password: string) => {
     );
 
     // save Refresh Token to DB
-    await prisma.refreshToken.create({
-      data: {
-        token: refreshToken,
-        expiryDate: refreshTokenTimeLimit,
+    const existingRefreshToken = await prisma.refreshToken.findFirst({
+      where: {
         userId: user.id,
       },
     });
+    if (existingRefreshToken) {
+      // update token
+      await prisma.refreshToken.update({
+        where: {
+          userId: user.id,
+        },
+        data: {
+          token: refreshToken,
+          expiryDate: refreshTokenTimeLimit,
+          userId: user.id,
+        },
+      });
+    } else {
+      // create and Save token to DB
+      await prisma.refreshToken.create({
+        data: {
+          token: refreshToken,
+          expiryDate: refreshTokenTimeLimit,
+          userId: user.id,
+        },
+      });
+    }
 
     return { refreshToken, accessToken };
   } catch (error: unknown) {
+    console.log(error);
+
     if (error instanceof Error) throw new Error(error + '');
   }
 };
