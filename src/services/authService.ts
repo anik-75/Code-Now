@@ -8,11 +8,13 @@ import {
   refreshTokenExpiry,
   saltRounds,
 } from '../config.js';
+import { Role } from '../types/userTypes.js';
 
 export const registerUser = async (
   email: string,
   password: string,
   username: string,
+  role?: Role,
 ) => {
   try {
     const isUserPresent = await prisma.user.findUnique({
@@ -32,6 +34,7 @@ export const registerUser = async (
         email: email,
         password: hashedPassword,
         username,
+        role,
       },
     });
     return user;
@@ -95,8 +98,6 @@ export const loginUser = async (email: string, password: string) => {
 
     return { refreshToken, accessToken };
   } catch (error: unknown) {
-    console.log(error);
-
     if (error instanceof Error) throw new Error(error + '');
   }
 };

@@ -15,19 +15,14 @@ export const register = async (
 ) => {
   try {
     const validatedData = registerSchema.parse(req.body);
-    const { email, password, username } = validatedData;
-    const user = await registerUser(email, password, username);
-    const response = {
-      id: user?.id,
-      username: user?.username,
-      email: user?.email,
-    };
-    res.status(201).json(response);
+    const { email, password, username, role } = validatedData;
+    await registerUser(email, password, username, role);
+    return res.status(201).json('success');
   } catch (error: unknown) {
     let errorMessage = 'Registration went wrong.';
     if (error instanceof Error)
-      res.status(400).json({ error: error.message, message: errorMessage });
-    next(error);
+      res.status(500).json({ error: error.message, message: errorMessage });
+    return;
   }
 };
 
@@ -61,22 +56,18 @@ export const login = async (
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       message: 'Login Successful',
     });
   } catch (error: unknown) {
     let errorMessage = 'Login Failed.';
     if (error instanceof Error)
       res.status(401).json({ error: error.message, message: errorMessage });
-    next(error);
+    return;
   }
 };
 
-export const refreshToken = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const refreshToken = async (req: Request, res: Response) => {
   try {
     const refreshToken = req.cookies['refreshToken'];
     if (!refreshToken) {
@@ -98,11 +89,11 @@ export const refreshToken = async (
       maxAge: 60 * 60 * 1000,
     });
 
-    res.status(200).json({ message: 'Refresh Token Successfully' });
+    return res.status(200).json({ message: 'Refresh Token Successfully' });
   } catch (error: unknown) {
     let errorMessage = 'Login Again. Refreshing Token Failed.';
     if (error instanceof Error)
       res.status(400).json({ error: error.message, message: errorMessage });
-    next(error);
+    return;
   }
 };
