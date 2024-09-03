@@ -10,6 +10,7 @@ export interface Problem {
   inputFilePath: string;
   slug: string;
   outputFilePath: string;
+  correctCode: string;
 }
 
 export interface updateProblem {
@@ -17,6 +18,12 @@ export interface updateProblem {
   description?: string;
   difficulty?: Difficulty;
   input?: string;
-  slug?: string;
   output?: string;
+  correctCode?: string;
+}
+
+export enum submissionStatus {
+  Pending = 'Pending',
+  Correct = 'Correct',
+  Wrong = 'Wrong',
 }

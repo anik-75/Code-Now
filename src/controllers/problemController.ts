@@ -9,25 +9,15 @@ import {
   saveProblem,
   update,
   deleteProblem,
+  getProblemDetails,
 } from '../services/problemService.js';
 import { uploadFile } from '../supabase/fileHandler.js';
 
 export const getProblem = async (req: Request, res: Response) => {
   const problemId = req.params.problemId;
-  let query;
-  if (isNaN(Number(problemId))) {
-    query = { slug: String(problemId).trim() };
-  } else {
-    query = { id: Number(problemId) };
-  }
-
   try {
-    const problem = await prisma.problem.findFirst({
-      where: {
-        OR: [query],
-      },
-    });
-    return res.status(200).json(problem);
+    const problem = await getProblemDetails(problemId);
+    return res.status(200).json({ problem, message: 'success' });
   } catch (error) {
     return res.status(400).json({
       error,
@@ -39,7 +29,8 @@ export const getProblem = async (req: Request, res: Response) => {
 export const createProblem = async (req: Request, res: Response) => {
   try {
     const validatedData = problemSchema.parse(req.body);
-    const { title, description, difficulty, input, output } = validatedData;
+    const { title, description, difficulty, input, output, correctCode } =
+      validatedData;
     // @ts-ignore
     const slug = slugify(title, {
       lower: true,
@@ -73,15 +64,15 @@ export const createProblem = async (req: Request, res: Response) => {
     }
 
     if (outputFilePath && inputFilePath) {
-      const problem = await saveProblem({
+      await saveProblem({
         title,
         description,
         difficulty,
         inputFilePath,
         outputFilePath,
         slug,
+        correctCode,
       });
-      console.log(problem);
     }
     return res.status(201).json('success');
   } catch (error) {
@@ -100,7 +91,8 @@ export const updateProblem = async (req: Request, res: Response) => {
 
   try {
     const validatedData = updateProblemSchema.parse(req.body);
-    const { title, description, difficulty, input, output } = validatedData;
+    const { title, description, difficulty, input, output, correctCode } =
+      validatedData;
 
     await update(Number(problemId), {
       title,
@@ -108,6 +100,7 @@ export const updateProblem = async (req: Request, res: Response) => {
       difficulty,
       input,
       output,
+      correctCode,
     });
 
     return res.status(200).json('updated successfully');

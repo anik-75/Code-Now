@@ -3,6 +3,59 @@ import prisma from '../prisma.js';
 import { Problem, updateProblem } from '../types/problemtypes.js';
 import { deleteFile, uploadFile } from '../supabase/fileHandler.js';
 
+export const getProblemDetails = async (problemId: string) => {
+  let query;
+  if (isNaN(Number(problemId))) {
+    query = { slug: String(problemId).trim() };
+  } else {
+    query = { id: Number(problemId) };
+  }
+  try {
+    const problem = await prisma.problem.findFirst({
+      where: {
+        OR: [query],
+      },
+    });
+    if (!problem) {
+      throw new Error('Problem not Found.');
+    }
+
+    const savedProblem = {
+      title: problem?.title,
+      description: problem?.description,
+      slug: problem?.slug,
+      input: problem?.input,
+      output: problem?.output,
+      difficulty: problem?.difficulty,
+    };
+    return savedProblem;
+  } catch (error) {
+    if (error instanceof Error) throw new Error(error + '');
+  }
+};
+
+export const getProblemCorrectCode = async (problemId: string) => {
+  let query;
+  if (isNaN(Number(problemId))) {
+    query = { slug: String(problemId).trim() };
+  } else {
+    query = { id: Number(problemId) };
+  }
+  try {
+    const problem = await prisma.problem.findFirst({
+      where: {
+        OR: [query],
+      },
+    });
+    if (!problem) {
+      throw new Error('Problem not Found.');
+    }
+    return problem.correctCode;
+  } catch (error) {
+    if (error instanceof Error) throw new Error(error + '');
+  }
+};
+
 export const saveProblem = async ({
   title,
   description,
@@ -10,6 +63,7 @@ export const saveProblem = async ({
   inputFilePath,
   slug,
   outputFilePath,
+  correctCode,
 }: Problem) => {
   try {
     const problem = await prisma.problem.create({
@@ -20,6 +74,7 @@ export const saveProblem = async ({
         input: inputFilePath,
         slug,
         output: outputFilePath,
+        correctCode,
       },
     });
     return problem;
@@ -30,7 +85,7 @@ export const saveProblem = async ({
 
 export const update = async (
   problemId: number,
-  { title, description, difficulty, input, output }: updateProblem,
+  { title, description, difficulty, input, output, correctCode }: updateProblem,
 ) => {
   try {
     const existingProblem = await prisma.problem.findFirst({
@@ -78,12 +133,13 @@ export const update = async (
         id: existingProblem.id,
       },
       data: {
-        title,
-        description,
-        difficulty,
+        title: title ?? existingProblem.title,
+        description: description ?? existingProblem.description,
+        difficulty: difficulty ?? existingProblem.difficulty,
         input: input ?? existingProblem.input,
-        slug,
+        slug: slug ?? existingProblem.slug,
         output: output ?? existingProblem.output,
+        correctCode: correctCode ?? existingProblem.correctCode,
       },
     });
   } catch (error) {

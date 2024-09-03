@@ -7,6 +7,7 @@ import {
   getProblem,
   updateProblem,
 } from '../controllers/problemController.js';
+import { runCode, submitCode } from '../controllers/submissionController.js';
 
 const problemRouter = Router();
 
@@ -14,5 +15,7 @@ problemRouter.post('/', authMiddleWare, checkAdmin, createProblem);
 problemRouter.put('/:problemId', authMiddleWare, checkAdmin, updateProblem);
 problemRouter.get('/:problemId', authMiddleWare, getProblem);
 problemRouter.delete('/:problemId', authMiddleWare, checkAdmin, removeProblem);
+problemRouter.post('/:problemId/submit', authMiddleWare, submitCode);
+problemRouter.post('/:problemId/run', authMiddleWare, runCode);
 
 export default problemRouter;

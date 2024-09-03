@@ -16,8 +16,6 @@ export async function uploadFile(
     if (error) {
       throw new Error(error.message);
     }
-
-    console.log('File uploaded successfully:', data);
     return data;
   } catch (error) {
     if (error && typeof error === 'object' && 'message' in error) {
@@ -35,13 +33,11 @@ export async function readFile(bucketName: string, fileName: string) {
       .download(fileName);
 
     if (error) {
-      console.log(error);
       throw new Error(error.message);
     }
 
     // convert to text
     const text = await data.text();
-    console.log('File content:', text);
     return text;
   } catch (error) {
     if (error && typeof error === 'object' && 'message' in error) {
@@ -62,9 +58,6 @@ export async function deleteFile(bucketName: string, filePath: string) {
       throw new Error(error.message);
     }
 
-    console.log(error);
-    console.log(data);
-    console.log('File deleted successfully.');
     return data;
   } catch (error) {
     if (error && typeof error === 'object' && 'message' in error) {

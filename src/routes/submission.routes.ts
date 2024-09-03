@@ -7,7 +7,7 @@ import { authMiddleWare } from '../middlewares/authMiddleware.js';
 
 const submissionRouter = Router();
 
-submissionRouter.post('/submissions', authMiddleWare, submitCode);
+submissionRouter.post('/:problemId', authMiddleWare, submitCode);
 submissionRouter.get('/:submissionId', authMiddleWare, getSubmission);
 
 export default submissionRouter;

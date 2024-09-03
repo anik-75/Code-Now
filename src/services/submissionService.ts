@@ -4,6 +4,7 @@ export const createSubmission = async (
   code: string,
   language: string,
   userId: string,
+  problemId: string,
 ) => {
   try {
     const submission = await prisma.submission.create({
@@ -12,6 +13,7 @@ export const createSubmission = async (
         language: language,
         userId: Number(userId),
         output: '',
+        problemId: Number(problemId),
       },
     });
     return submission;
