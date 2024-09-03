@@ -8,34 +8,61 @@ async function executeCode(
   language: string,
 ) {
   try {
-    const { stdout, stderr } = await executor(
-      `docker run --rm -i \
-    --security-opt no-new-privileges \
-    --network none \
-    --read-only \
-    --cpus=".5" \
-    --memory="256m" \
-    --tmpfs /mnt:rw,size=10m \
-    java-executor \
-    bash -c ' \
-    echo "${encodeCode}" | base64 -d > /mnt/Main.java && \
-    echo "${inputValue}" | base64 -d  > /mnt/input.txt && \
-    javac /mnt/Main.java -d /mnt && \
-    java -cp /mnt Main < /mnt/input.txt'`,
-    );
+    let command = '';
+    switch (language) {
+      case 'java':
+        command = `docker run --rm -i \
+        --security-opt no-new-privileges \
+        --network none \
+        --read-only \
+        --cpus=".5" \
+        --memory="256m" \
+        --tmpfs /mnt:rw,size=10m \
+        java-executor \
+        bash -c ' \
+        echo "${encodeCode}" | base64 -d > /mnt/Main.java && \
+        echo "${inputValue}" | base64 -d  > /mnt/input.txt && \
+        javac /mnt/Main.java -d /mnt && \
+        java -cp /mnt Main < /mnt/input.txt'`;
+        break;
 
+      case 'cpp':
+        command = `docker run --rm -i \
+        --security-opt no-new-privileges \
+        --network none \
+        --cpus=".5" \
+        --memory="256m" \
+        cpp-executor \
+        bash -c ' \
+        echo "${encodeCode}" | base64 -d > /tmp/main.cpp && \
+        echo "${inputValue}" | base64 -d  > /tmp/input.txt && \
+        g++ /tmp/main.cpp -o /tmp/main && \
+        chmod +x /tmp/main && \
+        /tmp/main < /tmp/input.txt'`;
+        break;
+
+      default:
+        throw new Error('Language not supported.');
+    }
+
+    if (command) {
+      let { stdout, stderr } = await executor(command);
+      return stdout;
+    }
     // console.log('std', stdout);
-    return stdout;
   } catch (error: any) {
-    // console.log('err', error.stderr);
-    throw new Error(error.stderr);
+    if (error.stderr) {
+      throw new Error(error.stderr);
+    } else {
+      console.log(error.message);
+    }
   }
 }
 
 // executeCode(
-//   'aW1wb3J0IGphdmEudXRpbC4qOwoKcHVibGljIGNsYXNzIE1haW4gewogIHB1YmxpYyBzdGF0aWMgdm9pZCBtYWluKFN0cmluZ1tdIGFyZ3MpIHsKICAgIFNjYW5uZXIgc2NuID0gbmV3IFNjYW5uZXIoU3lzdGVtLmluKTsKCiAgICBpbnQgbiA9IHNjbi5uZXh0SW50KCk7CiAgICBTeXN0ZW0ub3V0LnByaW50bG4obik7CgogICAgaW50W10gYXJyID0gbmV3IGludFtuXTsKICAgIGZvciAoaW50IGkgPSAwOyBpIDwgbjsgaSsrKSB7CiAgICAgIGFycltpXSA9IHNjbi5uZXh0SW50KCk7CiAgICB9CgogICAgZm9yIChpbnQgdmFsIDogYXJyKSB7CiAgICAgIFN5c3RlbS5vdXQucHJpbnRsbih2YWwpOwogICAgfQogIH0KfQo=',
-//   'NAoyCjcKMTEKMTU=',
-//   'java',
+//   'I2luY2x1ZGUgPGlvc3RyZWFtPgoKaW50IG1haW4oKSB7CiAgICBpbnQgbjsKCiAgICAvLyBBc2sgdGhlIHVzZXIgZm9yIHRoZSBudW1iZXIgb2YgZWxlbWVudHMgaW4gdGhlIGFycmF5CiAgICBzdGQ6OiA8PCAiRW50ZXIgdGhlIG51bWJlciBvZiBlbGVtZW50cyBpbiB0aGUgYXJyYXk6ICI7CiAgICBzdGQ6OmNpbiA+PiBuOwoKICAgIC8vIENyZWF0ZSBhbiBhcnJheSBvZiBzaXplIG4KICAgIGludCBhcnJbbl07CgogICAgLy8gSW5wdXQgZWxlbWVudHMgaW50byB0aGUgYXJyYXkKICAgIHN0ZDo6Y291dCA8PCAiRW50ZXIgIiA8PCBuIDw8ICIgZWxlbWVudHM6IiA8PCBzdGQ6OmVuZGw7CiAgICBmb3IoaW50IGkgPSAwOyBpIDwgbjsgaSsrKSB7CiAgICAgICAgc3RkOjpjaW4gPj4gYXJyW2ldOwogICAgfQoKICAgIC8vIFByaW50IHRoZSBhcnJheQogICAgc3RkOjpjb3V0IDw8ICJUaGUgYXJyYXkgZWxlbWVudHMgYXJlOiAiOwogICAgZm9yKGludCBpID0gMDsgaSA8IG47IGkrKykgewogICAgICAgIHN0ZDo6Y291dCA8PCBhcnJbaV0gPDwgIiAiOwogICAgfQoKICAgIHJldHVybiAwOwp9Cg==',
+//   'MwowCjEKMg==',
+//   'cpp',
 // );
 
 export default executeCode;
