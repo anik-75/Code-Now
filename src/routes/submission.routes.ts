@@ -1,13 +1,14 @@
 import { Router } from 'express';
 import {
-  getSubmission,
+  getSubmissionById,
+  getSubmissions,
   submitCode,
 } from '../controllers/submissionController.js';
 import { authMiddleWare } from '../middlewares/authMiddleware.js';
 
 const submissionRouter = Router();
 
-submissionRouter.post('/:problemId', authMiddleWare, submitCode);
-submissionRouter.get('/:submissionId', authMiddleWare, getSubmission);
+submissionRouter.get('/:problemId', authMiddleWare, getSubmissions);
+submissionRouter.get('/:submissionId', authMiddleWare, getSubmissionById);
 
 export default submissionRouter;

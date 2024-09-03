@@ -125,7 +125,7 @@ export const runCode = async (req: Request, res: Response) => {
   }
 };
 
-export const getSubmission = async (req: Request, res: Response) => {
+export const getSubmissionById = async (req: Request, res: Response) => {
   const { submissionId } = req.params;
 
   try {
@@ -142,5 +142,27 @@ export const getSubmission = async (req: Request, res: Response) => {
         .status(400)
         .json({ error: error.message, message: 'Submission not Found.' });
     return;
+  }
+};
+
+export const getSubmissions = async (req: Request, res: Response) => {
+  const userId = req.userId;
+  const problemId = req.params.problemId;
+  try {
+    const submissions = await prisma.submission.findMany({
+      where: {
+        AND: [
+          {
+            userId: Number(userId),
+          },
+          {
+            problemId: Number(problemId),
+          },
+        ],
+      },
+    });
+    return res.status(200).json(submissions);
+  } catch (error) {
+    return res.status(500).json(error);
   }
 };
