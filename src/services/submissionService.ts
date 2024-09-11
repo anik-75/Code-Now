@@ -7,6 +7,7 @@ export const createSubmission = async (
   problemId: string,
 ) => {
   try {
+    console.log(problemId);
     const submission = await prisma.submission.create({
       data: {
         code: code,

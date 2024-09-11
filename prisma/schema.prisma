@@ -42,6 +42,7 @@ model Submission {
   Problem   Problem          @relation(fields: [problemId], references: [id])
   problemId Int
   status    SubmissionStatus @default(Pending)
+  createdAt DateTime         @default(now())
 }
 
 enum SubmissionStatus {

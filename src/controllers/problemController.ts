@@ -10,6 +10,7 @@ import {
   update,
   deleteProblem,
   getProblemDetails,
+  getAllProblemsDetails,
 } from '../services/problemService.js';
 import { uploadFile } from '../supabase/fileHandler.js';
 
@@ -121,6 +122,18 @@ export const removeProblem = async (req: Request, res: Response) => {
     await deleteProblem(Number(problemId));
 
     return res.status(204).end();
+  } catch (error) {
+    return res.status(400).json({
+      error,
+      message: 'Problem Not Found.',
+    });
+  }
+};
+
+export const getAllProblems = async (_req: Request, res: Response) => {
+  try {
+    const problems = await getAllProblemsDetails();
+    return res.status(200).json({ problems, message: 'success' });
   } catch (error) {
     return res.status(400).json({
       error,

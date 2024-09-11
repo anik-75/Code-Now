@@ -1,7 +1,7 @@
 import slugify from 'slugify';
 import prisma from '../prisma.js';
 import { Problem, updateProblem } from '../types/problemtypes.js';
-import { deleteFile, uploadFile } from '../supabase/fileHandler.js';
+import { deleteFile, readFile, uploadFile } from '../supabase/fileHandler.js';
 
 export const getProblemDetails = async (problemId: string) => {
   let query;
@@ -20,15 +20,24 @@ export const getProblemDetails = async (problemId: string) => {
       throw new Error('Problem not Found.');
     }
 
-    const savedProblem = {
+    const input = await readFile('Problems', problem.input);
+    let encodedInput;
+    if (input) encodedInput = Buffer.from(input).toString('base64');
+
+    const output = await readFile('Problems', problem.output);
+    let encodedOutput;
+    if (output) encodedOutput = Buffer.from(output).toString('base64');
+
+    const retrievedProblem = {
+      id: problem?.id,
       title: problem?.title,
       description: problem?.description,
       slug: problem?.slug,
-      input: problem?.input,
-      output: problem?.output,
+      input: encodedInput,
+      output: encodedOutput,
       difficulty: problem?.difficulty,
     };
-    return savedProblem;
+    return retrievedProblem;
   } catch (error) {
     if (error instanceof Error) throw new Error(error + '');
   }
@@ -166,6 +175,26 @@ export const deleteProblem = async (problemId: number) => {
       where: {
         id: problem.id,
       },
+    });
+  } catch (error) {
+    if (error instanceof Error) throw new Error(error + '');
+  }
+};
+
+export const getAllProblemsDetails = async () => {
+  try {
+    const problems = await prisma.problem.findMany({});
+    if (!problems) {
+      throw new Error('Problems not Found.');
+    }
+    return problems.map((problem) => {
+      return {
+        id: problem?.id,
+        title: problem?.title,
+        slug: problem?.slug,
+        description: problem?.description,
+        difficulty: problem?.difficulty,
+      };
     });
   } catch (error) {
     if (error instanceof Error) throw new Error(error + '');

@@ -26,4 +26,5 @@ export enum submissionStatus {
   Pending = 'Pending',
   Correct = 'Correct',
   Wrong = 'Wrong',
+  Error = 'Error',
 }

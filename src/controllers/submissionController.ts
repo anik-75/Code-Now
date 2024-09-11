@@ -12,6 +12,7 @@ import {
 } from '../services/problemService.js';
 import { getInput, getOutput } from '../utils/helper.js';
 import { submissionStatus } from '../types/problemtypes.js';
+import { getProblem } from './problemController.js';
 
 export const submitCode = async (req: Request, res: Response) => {
   let submission;
@@ -33,7 +34,12 @@ export const submitCode = async (req: Request, res: Response) => {
     if (problem) {
       output = await getOutput(String(problem.output));
     }
-    submission = await createSubmission(code, language, userId!, problemId);
+    submission = await createSubmission(
+      code,
+      language,
+      userId!,
+      String(problem?.id),
+    );
 
     const encodedInput = Buffer.from(String(input)).toString('base64');
     const result = await executeCode(code, encodedInput, language);
@@ -71,7 +77,7 @@ export const submitCode = async (req: Request, res: Response) => {
     if (error instanceof Error) {
       res.status(200).json({
         error: error.message,
-        submissionStatus: submission ? submissionStatus.Wrong : '',
+        submissionStatus: submission ? submissionStatus.Error : '',
       });
     }
     return;
@@ -118,7 +124,7 @@ export const runCode = async (req: Request, res: Response) => {
     if (error instanceof Error) {
       res.status(200).json({
         error: error.message,
-        submissionStatus: correctCode ? submissionStatus.Wrong : '',
+        submissionStatus: correctCode ? submissionStatus.Error : '',
       });
     }
     return;
@@ -148,6 +154,10 @@ export const getSubmissionById = async (req: Request, res: Response) => {
 export const getSubmissions = async (req: Request, res: Response) => {
   const userId = req.userId;
   const problemId = req.params.problemId;
+  const problem = await getProblemDetails(problemId);
+  if (!problem) {
+    throw new Error('Problem not found');
+  }
   try {
     const submissions = await prisma.submission.findMany({
       where: {
@@ -156,7 +166,7 @@ export const getSubmissions = async (req: Request, res: Response) => {
             userId: Number(userId),
           },
           {
-            problemId: Number(problemId),
+            problemId: Number(problem.id),
           },
         ],
       },

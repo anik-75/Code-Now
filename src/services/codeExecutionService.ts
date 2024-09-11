@@ -17,13 +17,13 @@ async function executeCode(
         --read-only \
         --cpus=".5" \
         --memory="256m" \
-        --tmpfs /mnt:rw,size=10m \
-        java-executor \
+        --tmpfs /tmp:rw,size=10m \
+        anik462/java-executor \
         bash -c ' \
-        echo "${encodeCode}" | base64 -d > /mnt/Main.java && \
-        echo "${inputValue}" | base64 -d  > /mnt/input.txt && \
-        javac /mnt/Main.java -d /mnt && \
-        java -cp /mnt Main < /mnt/input.txt'`;
+        echo "${encodeCode}" | base64 -d > /tmp/Main.java && \
+        echo "${inputValue}" | base64 -d  > /tmp/input.txt && \
+        javac /tmp/Main.java -d /tmp && \
+        java -cp /tmp Main < /tmp/input.txt'`;
         break;
 
       case 'cpp':
@@ -32,7 +32,7 @@ async function executeCode(
         --network none \
         --cpus=".5" \
         --memory="256m" \
-        cpp-executor \
+        anik462/cpp-executor \
         bash -c ' \
         echo "${encodeCode}" | base64 -d > /tmp/main.cpp && \
         echo "${inputValue}" | base64 -d  > /tmp/input.txt && \
